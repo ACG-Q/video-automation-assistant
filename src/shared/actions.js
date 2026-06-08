@@ -27,4 +27,8 @@ export const ACTIONS = {
   QUEUE_PAUSED_CHANGED: 'queuePausedChanged',
   ALL_COMPLETE: 'allComplete',
   QUESTION_BANK_UPDATE: 'questionBankUpdate',
+  VERSION_RESULT: 'versionResult',
+
+  // Sidepanel → Background
+  CHECK_VERSION: 'checkVersion',
 }

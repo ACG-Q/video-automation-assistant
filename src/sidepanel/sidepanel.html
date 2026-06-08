@@ -51,6 +51,19 @@
       font-weight: 600;
       letter-spacing: -0.01em;
     }
+    .header-version {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: 6px;
+      font-weight: 400;
+    }
+    .header-update {
+      font-size: 10px;
+      color: var(--warning);
+      margin-left: 6px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
     .icon-btn {
       width: 36px;
       height: 36px;
@@ -326,7 +339,7 @@
 </head>
 <body>
   <div class="header">
-    <span class="header-title">视频自动化助手</span>
+    <span class="header-title">视频自动化助手<span class="header-version" id="versionText"></span></span>
     <button class="icon-btn" id="configBtn" aria-label="设置">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>

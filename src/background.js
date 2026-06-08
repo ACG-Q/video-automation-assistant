@@ -5,6 +5,39 @@ import { ACTIONS } from './shared/actions.js'
 const logCache = new Map()
 let pendingAppend = false
 
+function compareVersions(a, b) {
+  const pa = a.split('.').map(Number)
+  const pb = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0
+    const nb = pb[i] || 0
+    if (na > nb) return 1
+    if (na < nb) return -1
+  }
+  return 0
+}
+
+async function checkLatestVersion() {
+  try {
+    const res = await fetch('https://api.github.com/repos/ACG-Q/video-automation-assistant/releases/latest', {
+      signal: AbortSignal.timeout(10000)
+    })
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    const data = await res.json()
+    const latest = data.tag_name.replace(/^v/, '')
+    const current = chrome.runtime.getManifest().version
+    return {
+      current,
+      latest,
+      hasUpdate: compareVersions(latest, current) > 0,
+      url: data.html_url,
+      releaseName: data.name || data.tag_name
+    }
+  } catch {
+    return null
+  }
+}
+
 async function getTaskQueue() {
   const result = await chrome.storage.session.get('taskQueue')
   return result.taskQueue || { tasks: [], currentIndex: 0 }
@@ -178,12 +211,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         break
       }
+
+      case ACTIONS.CHECK_VERSION: {
+        const info = await checkLatestVersion()
+        if (info) notifySidebar({ action: ACTIONS.VERSION_RESULT, ...info })
+        break
+      }
     }
   } catch (e) {
     console.error('[background] 消息处理错误:', e)
   }
   })()
   return message.action === ACTIONS.QUESTION_BANK_UPDATE
+})
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === 'version-check') {
+    const info = await checkLatestVersion()
+    if (info && info.hasUpdate) {
+      notifySidebar({ action: ACTIONS.VERSION_RESULT, ...info })
+    }
+  }
 })
 
 async function trySync() {
@@ -198,4 +246,5 @@ chrome.runtime.onInstalled.addListener(async () => {
   await loadConfig()
   await trySync()
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {})
+  chrome.alarms.create('version-check', { periodInMinutes: 1440 })
 })
