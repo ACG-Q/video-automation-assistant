@@ -1,0 +1,14 @@
+{
+  "name": "video-automation-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "rollup -c -w",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "rollup": "^4.0.0"
+  }
+}

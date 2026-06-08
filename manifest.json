@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "视频自动化助手",
+  "version": "1.0.0",
+  "description": "cdeaa.com 学习平台自动化工具",
+  "permissions": ["storage", "tabs", "sidePanel"],
+  "host_permissions": ["*://cdeaa.com/*"],
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "content_scripts": [{
+    "matches": ["*://cdeaa.com/*"],
+    "js": ["dist/content.js"],
+    "run_at": "document_idle"
+  }],
+  "side_panel": {
+    "default_path": "dist/sidepanel.html"
+  },
+  "action": {
+    "default_title": "视频自动化助手"
+  }
+}

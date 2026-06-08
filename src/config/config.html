@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #1a1a2e; color: #e0e0e6; padding: 24px; max-width: 600px; margin: 0 auto; font-size: 14px; }
+    h1 { font-size: 20px; margin-bottom: 24px; }
+    .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+    .row label { flex: 1; font-size: 13px; }
+    .row input[type="text"],
+    .row input[type="number"] { width: 200px; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px; }
+    .row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .section { font-weight: 600; margin: 20px 0 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); color: #9a9aaf; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    .actions { display: flex; gap: 8px; margin-top: 24px; }
+    .btn { padding: 10px 24px; border-radius: 20px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #6c5ce7; color: white; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: #e0e0e6; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  </style>
+</head>
+<body>
+  <h1>配置</h1>
+  <div id="configForm"></div>
+  <div class="actions">
+    <button class="btn btn-primary" id="saveBtn">保存配置</button>
+    <button class="btn btn-secondary" id="resetBtn">恢复默认</button>
+  </div>
+  <script src="../../dist/config.js"></script>
+</body>
+</html>
