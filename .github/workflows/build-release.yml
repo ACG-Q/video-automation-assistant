@@ -1,0 +1,44 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [master]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Package extension
+        run: |
+          cd dist && zip -r ../video-automation-assistant.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension
+          path: video-automation-assistant.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: video-automation-assistant.zip
+          generate_release_notes: true
