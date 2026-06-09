@@ -19,6 +19,8 @@ const ICONS = {
   pauseCircle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
   database: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
+  volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>',
+  mute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
 }
 
 let currentTab = 'tasks'
@@ -27,6 +29,7 @@ let config = {}
 let userInfo = null
 let lastActiveTabUrl = ''
 let versionInfo = null
+let videoState = { muted: false, paused: true }
 
 function icon(name) {
   return ICONS[name] || ''
@@ -253,19 +256,33 @@ function renderPlay() {
 const LOG_MAX_ENTRIES = 200
 
 function appendLog(msg, type) {
-  const area = document.getElementById('logArea')
-  if (!area) return
-  const last = area.lastElementChild
-  if (last && last.textContent === msg) return
-  const dotClass = type || 'info'
-  const entry = document.createElement('div')
-  entry.className = 'log-entry'
-  entry.innerHTML = `<span class="log-dot ${dotClass}"></span><span>${msg}</span>`
-  area.appendChild(entry)
-  while (area.childElementCount > LOG_MAX_ENTRIES) {
-    area.removeChild(area.firstElementChild)
+
+  let iconSvg, textClass
+
+  if (type === 'success') { iconSvg = icon('check'); textClass = 'log-success' }
+  else if (type === 'error') { iconSvg = icon('alert'); textClass = 'log-error' }
+  else if (type === 'pending') { iconSvg = icon('pauseCircle'); textClass = 'log-pending' }
+  else if (type === 'user') { iconSvg = icon('user'); textClass = 'log-user' }
+  else if (type === 'debug') { iconSvg = icon('speed'); textClass = 'log-debug' }
+  else { iconSvg = icon('list'); textClass = 'log-info' }
+
+  const el = document.getElementById('taskLog')
+  if (!el) return
+  el.innerHTML += `<div class="log-line ${textClass}">${iconSvg} ${escapeHtml(msg)}</div>`
+  el.scrollTop = el.scrollHeight
+}
+
+function updateControlButtons() {
+  const playBtn = document.getElementById('playBtn')
+  const muteBtn = document.getElementById('muteBtn')
+  if (playBtn) {
+    const isPaused = videoState.paused
+    playBtn.innerHTML = `${icon(isPaused ? 'play' : 'pause')}<span>${isPaused ? '播放' : '暂停'}</span>`
   }
-  area.scrollTop = area.scrollHeight
+  if (muteBtn) {
+    const isMuted = videoState.muted
+    muteBtn.innerHTML = `${icon(isMuted ? 'mute' : 'volume')}<span>${isMuted ? '取消静音' : '静音'}</span>`
+  }
 }
 
 function showMatch(card, data, question, options) {
@@ -351,6 +368,16 @@ chrome.runtime.onMessage.addListener((msg) => {
       el.onclick = () => chrome.tabs.create({ url: msg.url })
     } else {
       el.textContent = 'v' + msg.current
+    }
+  }
+  if (msg.action === ACTIONS.UPDATE_VIDEO_PROGRESS) {
+    const newPaused = msg.paused
+    const newMuted = msg.muted
+    const changed = (newPaused !== videoState.paused) || (newMuted !== videoState.muted)
+    videoState.paused = newPaused
+    videoState.muted = newMuted
+    if (changed && currentTab === 'play') {
+      updateControlButtons()
     }
   }
 })

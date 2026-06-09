@@ -72,7 +72,9 @@ export function bindVideo(video) {
     chrome.runtime.sendMessage({
       action: ACTIONS.UPDATE_VIDEO_PROGRESS,
       currentTime: video.currentTime,
-      duration: video.duration
+      duration: video.duration,
+      paused: video.paused,
+      muted: video.muted
     }).catch(() => {})
   }, 1000)
 }
