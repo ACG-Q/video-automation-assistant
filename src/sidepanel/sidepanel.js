@@ -51,12 +51,12 @@ function renderGuide() {
     <div class="card">
       <div class="card-title">个人中心</div>
       <div class="card-desc">从课程列表抓取所有视频任务</div>
-      <button class="btn btn-block" id="openCenter">${icon('user')} 打开个人中心</button>
+      <button class="btn btn-block" id="openCenter" title="打开个人中心页面">${icon('user')} 打开个人中心</button>
     </div>
     <div class="card">
       <div class="card-title">课程播放页</div>
       <div class="card-desc">进入课程后自动识别并控制视频</div>
-      <button class="btn btn-block btn-secondary" id="openCourse">${icon('video')} 打开课程</button>
+      <button class="btn btn-block btn-secondary" id="openCourse" title="打开课程页面">${icon('video')} 打开课程</button>
     </div>
   `
 
@@ -97,8 +97,8 @@ function renderTasks() {
   el.innerHTML = `
     ${userHtml}
     <div style="display:flex;gap:6px;">
-      <button class="btn btn-block" id="fetchBtn">${icon('cloud')} 抓取</button>
-      <button class="btn btn-block btn-secondary" id="appendBtn">${icon('list')} 追加</button>
+      <button class="btn btn-block" id="fetchBtn" title="从个人中心抓取所有视频任务">${icon('cloud')} 抓取</button>
+      <button class="btn btn-block btn-secondary" id="appendBtn" title="追加新任务到队列末尾">${icon('list')} 追加</button>
     </div>
     ${total > 0 ? `
       <div style="margin-top:12px;">
@@ -110,14 +110,14 @@ function renderTasks() {
       </div>
       <div id="queueList" style="margin-top:6px;"></div>
       <div style="display:flex;gap:6px;margin-top:10px;">
-        <button class="btn btn-sm btn-primary" id="startBtn" style="flex:1;">
+        <button class="btn btn-sm btn-primary" id="startBtn" style="flex:1;" title="从未完成任务开始播放">
           ${icon('play')} 开始队列
         </button>
-        <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;">
+        <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;" title="${config.queuePaused ? '恢复队列播放' : '暂停队列播放'}">
           ${icon(config.queuePaused ? 'play' : 'pauseCircle')}
           ${config.queuePaused ? '恢复队列' : '暂停队列'}
         </button>
-        <button class="btn btn-sm btn-danger" id="clearBtn" style="flex:1;">
+        <button class="btn btn-sm btn-danger" id="clearBtn" style="flex:1;" title="清空所有任务">
           ${icon('trash')} 清空队列
         </button>
       </div>
@@ -175,16 +175,16 @@ function renderPlay() {
       <div style="font-weight:600;font-size:14px;margin-bottom:4px;" id="vidTitle">${curTask ? curTask.title : '-'}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:11px;color:var(--text-secondary);">${done} / ${taskQueue.tasks.length} 已完成</span>
-        <button class="btn btn-sm" id="skipBtn" style="padding:5px 12px;">${icon('skip')} 跳过</button>
+        <button class="btn btn-sm" id="skipBtn" style="padding:5px 12px;" title="跳过当前视频到下一个">${icon('skip')} 跳过</button>
       </div>
     </div>
 
     <div class="section-label">${icon('video')} 视频控制</div>
     <div class="control-grid">
-      <button class="control-btn" id="backBtn">${icon('backward')}<span>快退</span></button>
-      <button class="control-btn is-primary" id="playBtn">${icon(videoState.paused ? 'play' : 'pause')}<span>${videoState.paused ? '播放' : '暂停'}</span></button>
-      <button class="control-btn" id="fwdBtn">${icon('forward')}<span>快进</span></button>
-      <button class="control-btn" id="muteBtn">${icon(videoState.muted ? 'mute' : 'volume')}<span>${videoState.muted ? '取消静音' : '静音'}</span></button>
+      <button class="control-btn" id="backBtn" title="快退 10 秒">${icon('backward')}<span>快退</span></button>
+      <button class="control-btn is-primary" id="playBtn" title="${videoState.paused ? '播放视频' : '暂停视频'}">${icon(videoState.paused ? 'play' : 'pause')}<span>${videoState.paused ? '播放' : '暂停'}</span></button>
+      <button class="control-btn" id="fwdBtn" title="快进 10 秒">${icon('forward')}<span>快进</span></button>
+      <button class="control-btn" id="muteBtn" title="${videoState.muted ? '取消静音' : '静音'}">${icon(videoState.muted ? 'mute' : 'volume')}<span>${videoState.muted ? '取消静音' : '静音'}</span></button>
     </div>
 
     <div class="section-label" style="margin-top:4px;">${icon('speed')} 倍速</div>
@@ -218,12 +218,12 @@ function renderPlay() {
   document.getElementById('playBtn')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'togglePlay' })
   })
-document.getElementById('fwdBtn')?.addEventListener('click', () => {
-  chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'stepForward' })
-})
-document.getElementById('muteBtn')?.addEventListener('click', () => {
-  chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'toggleMute' })
-})
+  document.getElementById('fwdBtn')?.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'stepForward' })
+  })
+  document.getElementById('muteBtn')?.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'toggleMute' })
+  })
 
   document.querySelectorAll('[data-sp]').forEach(btn => {
     btn.addEventListener('click', () => {

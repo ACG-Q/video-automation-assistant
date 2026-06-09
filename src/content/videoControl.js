@@ -47,7 +47,7 @@ export function bindVideo(video) {
   video.addEventListener('play', () => {
     if (state.config.autoMute && !video.muted) {
       video.muted = true
-      sendLog('自动静音已开启')
+      sendLog('视频已自动静音')
     }
   })
 

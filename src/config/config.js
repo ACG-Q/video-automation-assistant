@@ -1,6 +1,24 @@
 import { loadConfig, saveConfig, getDefaultConfig } from '../lib/configManager.js'
 import { ACTIONS } from '../shared/actions.js'
 
+const FIELD_INFO = {
+  qSelector: '用于定位题目题干区域的 CSS 选择器',
+  oSelector: '用于定位选项列表的 CSS 选择器',
+  interval: '检测题目出现的轮询间隔，单位毫秒',
+  retryTimes: '答题失败后的重试次数',
+  defaultSpeed: '视频默认播放倍速',
+  forwardBackwardStep: '快进/快退的步长，单位秒',
+  speedStep: '倍速调节的步长',
+  autoAnswer: '开启后自动检测并回答题目',
+  autoSubmit: '开启后自动提交答案',
+  keepSpeed: '保持视频倍速不被网页脚本重置',
+  autoResume: '视频暂停后自动恢复播放',
+  autoMute: '视频开始播放时自动静音',
+  showLog: '在侧边栏显示运行日志',
+  bankUrl: '远程题库 JSON 文件的 URL',
+  pushUrl: '推送本地题目到远程的 API 地址',
+}
+
 function createField(key, label, type, value, extra) {
   const row = document.createElement('div')
   row.className = 'row'
@@ -8,6 +26,14 @@ function createField(key, label, type, value, extra) {
   const lbl = document.createElement('label')
   lbl.textContent = label
   lbl.htmlFor = `cfg-${key}`
+  const info = FIELD_INFO[key]
+  if (info) {
+    const infoIcon = document.createElement('span')
+    infoIcon.className = 'info-icon'
+    infoIcon.textContent = ' ⓘ'
+    infoIcon.title = info
+    lbl.appendChild(infoIcon)
+  }
 
   if (type === 'checkbox') {
     const inp = document.createElement('input')
