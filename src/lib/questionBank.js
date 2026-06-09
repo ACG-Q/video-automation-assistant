@@ -5,7 +5,23 @@ const MIN_KEYWORD_MATCHES = 2
 
 export async function loadQuestionBank() {
   const result = await chrome.storage.local.get('questionBank')
-  return result.questionBank || []
+  let bank = result.questionBank || []
+  let changed = false
+  bank = bank.map(q => {
+    if (q.isLocal === undefined) {
+      changed = true
+      return {
+        ...q,
+        isLocal: q.source === 'manual' || false,
+        syncStatus: 'synced',
+        version: 1,
+        dateUpdated: q.dateUpdated || q.dateAdded || new Date().toISOString()
+      }
+    }
+    return q
+  })
+  if (changed) await saveQuestionBank(bank)
+  return bank
 }
 
 export async function saveQuestionBank(bank) {
@@ -58,14 +74,24 @@ export async function updateQuestionBank(entry) {
 
   const idx = bank.findIndex(q => q.questionId === hash)
   if (idx >= 0) {
-    if (bank[idx].answer !== entry.answer) {
-      bank[idx] = { ...bank[idx], ...entry, questionId: hash, dateUpdated: new Date().toISOString() }
+    bank[idx] = {
+      ...bank[idx],
+      ...entry,
+      questionId: hash,
+      dateUpdated: new Date().toISOString(),
+      version: (bank[idx].version || 0) + 1,
+      syncStatus: 'local_modified'
     }
   } else {
     bank.push({
       ...entry,
       questionId: hash,
-      dateAdded: entry.dateAdded || new Date().toISOString()
+      isLocal: true,
+      source: entry.source || 'manual',
+      syncStatus: 'local_modified',
+      version: 1,
+      dateAdded: entry.dateAdded || new Date().toISOString(),
+      dateUpdated: new Date().toISOString()
     })
   }
 
@@ -73,41 +99,118 @@ export async function updateQuestionBank(entry) {
   return bank
 }
 
-export async function syncRemoteQuestionBank(bankUrl) {
-  if (!bankUrl) return 0
+export async function syncFromRemote(bankUrl) {
+  if (!bankUrl) return { added: 0, conflicts: [] }
+  const conflicts = []
+  let added = 0
+
+  let remoteList
   try {
     const res = await fetch(bankUrl, { signal: AbortSignal.timeout(10000) })
     if (!res.ok) throw new Error('HTTP ' + res.status)
-    const list = await res.json()
-    if (!Array.isArray(list) || !list.length) return 0
+    remoteList = await res.json()
+    if (!Array.isArray(remoteList)) return { added: 0, conflicts: [] }
+  } catch (e) {
+    console.warn('[questionBank] syncFromRemote 失败:', e.message)
+    return { added: -1, conflicts: [] }
+  }
 
-    const bank = await loadQuestionBank()
-    let added = 0
+  const bank = await loadQuestionBank()
 
-    for (const item of list) {
-      let options = item.options
-      if (!options || !options.length) {
-        const keys = ['A', 'B', 'C', 'D', 'E', 'F']
-        options = keys.filter(k => item[k]).map(k => k + '. ' + item[k])
-      }
-      if (!item.title) continue
-      const hash = await sha256Hex(item.title + (options || []).join(''))
-      if (bank.findIndex(q => q.questionId === hash) >= 0) continue
+  for (const item of remoteList) {
+    if (!item.title) continue
+
+    let options = item.options
+    if (!options || !options.length) {
+      const keys = ['A', 'B', 'C', 'D', 'E', 'F']
+      options = keys.filter(k => item[k]).map(k => k + '. ' + item[k])
+    }
+
+    const hash = await sha256Hex(item.title + (options || []).join(''))
+    const localIdx = bank.findIndex(q => q.questionId === hash)
+
+    if (localIdx < 0) {
+      // 全新远程题
       bank.push({
         questionId: hash,
         title: item.title,
         options: options || [],
         answer: extractLetterAnswer(item.answer || ''),
-        source: bankUrl,
-        dateAdded: new Date().toISOString()
+        source: item.source || bankUrl,
+        isLocal: false,
+        syncStatus: 'synced',
+        version: 1,
+        dateAdded: new Date().toISOString(),
+        dateUpdated: item.dateUpdated || new Date().toISOString()
       })
       added++
+      continue
     }
 
-    if (added > 0) await saveQuestionBank(bank)
-    return added
-  } catch (e) {
-    console.warn('[questionBank] 远程同步失败:', e.message)
-    return -1
+    // 已存在本地匹配
+    const local = bank[localIdx]
+    const remoteUpdated = item.dateUpdated || ''
+
+    if (local.isLocal === true) {
+      // 本地创建的题，本地权威
+      if (remoteUpdated > local.dateUpdated) {
+        // 远程有更新，标记冲突，保存远程数据供用户选择
+        local.syncStatus = 'conflict'
+        local._remote = {
+          title: item.title,
+          options: options || [],
+          answer: extractLetterAnswer(item.answer || '')
+        }
+        conflicts.push({ questionId: hash, title: local.title })
+      }
+    } else {
+      // 之前从远程来的
+      if (local.syncStatus === 'local_modified') {
+        // 用户改过远程题
+        if (local.dateUpdated >= remoteUpdated) {
+          // 保留本地，syncStatus 保持 local_modified
+        } else if (remoteUpdated > local.dateUpdated) {
+          // 远程更新了，覆盖
+          bank[localIdx] = {
+            ...local,
+            title: item.title,
+            options: options || [],
+            answer: extractLetterAnswer(item.answer || ''),
+            source: item.source || local.source,
+            dateUpdated: remoteUpdated,
+            syncStatus: 'remote_modified',
+            version: local.version + 1
+          }
+        } else {
+          local.syncStatus = 'conflict'
+          local._remote = {
+            title: item.title,
+            options: options || [],
+            answer: extractLetterAnswer(item.answer || '')
+          }
+          conflicts.push({ questionId: hash, title: local.title })
+        }
+      } else {
+        // 没被改过，直接用远程覆盖
+        bank[localIdx] = {
+          ...local,
+          title: item.title,
+          options: options || [],
+          answer: extractLetterAnswer(item.answer || ''),
+          source: item.source || local.source,
+          dateUpdated: remoteUpdated,
+          syncStatus: 'synced',
+          version: local.version
+        }
+      }
+    }
   }
+
+  if (added > 0 || conflicts.length > 0) await saveQuestionBank(bank)
+  return { added, conflicts }
+}
+
+export async function syncToRemote(pushUrl) {
+  // 预留：后续实现 GitHub API 推送
+  return { pushed: 0 }
 }

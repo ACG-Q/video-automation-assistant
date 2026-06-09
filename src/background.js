@@ -1,5 +1,5 @@
 import { loadConfig, saveConfig } from './lib/configManager.js'
-import { updateQuestionBank, loadQuestionBank, syncRemoteQuestionBank } from './lib/questionBank.js'
+import { updateQuestionBank, loadQuestionBank, syncFromRemote, syncToRemote } from './lib/questionBank.js'
 import { ACTIONS } from './shared/actions.js'
 
 const logCache = new Map()
@@ -220,11 +220,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       case ACTIONS.REQUEST_SYNC: {
         const cfg = await loadConfig()
-        const count = await syncRemoteQuestionBank(cfg.bankUrl)
+        const result = await syncFromRemote(cfg.bankUrl)
         const bank = await loadQuestionBank()
         chrome.runtime.sendMessage({
           action: ACTIONS.SYNC_RESULT,
-          added: count,
+          added: result.added,
+          total: bank.length,
+          conflicts: result.conflicts
+        }).catch(() => {})
+        break
+      }
+
+      case ACTIONS.PUSH_SYNC: {
+        const cfg = await loadConfig()
+        const result = await syncToRemote(cfg.pushUrl)
+        const bank = await loadQuestionBank()
+        chrome.runtime.sendMessage({
+          action: ACTIONS.PUSH_SYNC_RESULT,
+          pushed: result.pushed,
           total: bank.length
         }).catch(() => {})
         break
@@ -249,8 +262,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 async function trySync() {
   const config = await loadConfig()
   if (config.bankUrl) {
-    const count = await syncRemoteQuestionBank(config.bankUrl)
-    if (count > 0) notifySidebar({ action: ACTIONS.LOG, log: '远程题库已同步，新增 ' + count + ' 题' })
+    const result = await syncFromRemote(config.bankUrl)
+    if (result.added > 0) notifySidebar({ action: ACTIONS.LOG, log: '远程题库已同步，新增 ' + result.added + ' 题' })
   }
 }
 

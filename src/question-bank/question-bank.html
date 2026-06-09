@@ -182,10 +182,19 @@
     }
 
     .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       text-align: center;
       color: var(--text-muted);
-      padding: 48px 0;
+      padding: 64px 20px;
       font-size: 14px;
+    }
+    .empty svg {
+      width: 48px;
+      height: 48px;
+      opacity: 0.35;
     }
 
     .add-form {
@@ -228,6 +237,8 @@
     }
     .tag-manual { background: var(--primary-soft); color: var(--primary); }
     .tag-remote { background: var(--success-soft); color: var(--success); }
+    .tag-conflict { background: #fff3cd; color: #856404; }
+    .tag-modified { background: #cce5ff; color: #004085; }
   </style>
 </head>
 <body>
@@ -240,6 +251,7 @@
     <input type="text" id="searchInput" placeholder="搜索题目...">
     <span class="spacer"></span>
     <button class="btn btn-primary" id="syncBtn">同步远程</button>
+    <button class="btn" id="pushBtn">推送远程</button>
     <button class="btn" id="exportBtn">导出</button>
     <button class="btn" id="importBtn">导入</button>
     <button class="btn btn-success" id="addToggleBtn">+ 添加</button>
