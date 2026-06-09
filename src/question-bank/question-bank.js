@@ -74,7 +74,7 @@ function render() {
           <span>${sourceTag(item.isLocal)}</span>
           ${syncLabel}
           <span title="${escapeHtml(item.source || '')}">来源: ${escapeHtml(truncateSource(item.source))}</span>
-          <span>ID: ${(item.questionId || '').slice(0, 8)}...</span>
+          <span title="${item.questionId || ''}">ID: ${(item.questionId || '').slice(0, 8)}...</span>
           <span>${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : '-'}</span>
         </div>
         <div class="card-actions">
