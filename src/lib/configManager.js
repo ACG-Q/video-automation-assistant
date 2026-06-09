@@ -8,6 +8,7 @@ const DEFAULT_CONFIG = {
   queuePaused: false,
   showLog: true,
   bankUrl: 'https://gh-proxy.com/https://github.com/ACG-Q/UserScript/raw/refs/heads/main/questions.json',
+  pushUrl: '',
   defaultSpeed: 2.0,
   forwardBackwardStep: 10,
   speedStep: 0.25,

@@ -79,6 +79,7 @@ function buildForm(config) {
   form.appendChild(otherSection)
 
   form.appendChild(createField('bankUrl', '远程题库 URL', 'text', config.bankUrl))
+  form.appendChild(createField('pushUrl', '远程推送 URL', 'text', config.pushUrl))
 }
 
 function showToast(msg) {
