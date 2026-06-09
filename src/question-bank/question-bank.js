@@ -17,7 +17,7 @@ function showToast(msg, isError) {
 
 function sourceTag(isLocal) {
   return isLocal
-    ? '<span class="tag tag-manual">手动</span>'
+    ? '<span class="tag tag-manual">本地</span>'
     : '<span class="tag tag-remote">远程</span>'
 }
 
