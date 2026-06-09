@@ -107,6 +107,9 @@ function renderTasks() {
       </div>
       <div id="queueList" style="margin-top:6px;"></div>
       <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-sm btn-primary" id="startBtn" style="flex:1;">
+          ${icon('play')} 开始队列
+        </button>
         <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;">
           ${icon(config.queuePaused ? 'play' : 'pauseCircle')}
           ${config.queuePaused ? '恢复队列' : '暂停队列'}
@@ -129,6 +132,9 @@ function renderTasks() {
   })
   document.getElementById('clearBtn')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: ACTIONS.CLEAR_QUEUE })
+  })
+  document.getElementById('startBtn')?.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: ACTIONS.START_QUEUE })
   })
 
   const listEl = document.getElementById('queueList')
