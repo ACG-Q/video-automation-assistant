@@ -71,6 +71,7 @@ function buildForm(config) {
   form.appendChild(createField('autoSubmit', '自动提交', 'checkbox', config.autoSubmit))
   form.appendChild(createField('keepSpeed', '倍速守护', 'checkbox', config.keepSpeed))
   form.appendChild(createField('autoResume', '自动恢复播放', 'checkbox', config.autoResume))
+  form.appendChild(createField('autoMute', '自动静音', 'checkbox', config.autoMute))
   form.appendChild(createField('showLog', '显示日志', 'checkbox', config.showLog))
 
   const otherSection = document.createElement('div')
