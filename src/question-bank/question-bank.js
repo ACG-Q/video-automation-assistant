@@ -21,9 +21,9 @@ function sourceTag(isLocal) {
     : '<span class="tag tag-remote">远程</span>'
 }
 
-function truncateSource(src) {
-  if (!src) return '—'
-  return src.length > 30 ? src.slice(0, 30) + '...' : src
+function truncate(text, max) {
+  if (!text) return '—'
+  return text.length > max ? text.slice(0, max) + '...' : text
 }
 
 function attr(name, value) {
@@ -77,8 +77,8 @@ function render() {
         <div class="card-meta">
           <span>${sourceTag(item.isLocal)}</span>
           ${syncLabel}
-          <span${attr('title', item.source)}>来源: ${escapeHtml(truncateSource(item.source))}</span>
-          <span${attr('title', item.questionId)}>ID: ${(item.questionId || '').slice(0, 8)}...</span>
+          <span${attr('title', item.source)}>来源: ${escapeHtml(truncate(item.source, 30))}</span>
+          <span${attr('title', item.questionId)}>ID: ${truncate(item.questionId, 8)}</span>
           <span>${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : '-'}</span>
         </div>
         <div class="card-actions">
