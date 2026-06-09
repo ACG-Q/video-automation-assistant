@@ -44,6 +44,13 @@ export function bindVideo(video) {
   video.addEventListener('loadedmetadata', restoreSpeed)
   video.addEventListener('canplay', restoreSpeed)
 
+  video.addEventListener('play', () => {
+    if (state.config.autoMute && !video.muted) {
+      video.muted = true
+      sendLog('自动静音已开启')
+    }
+  })
+
   video.addEventListener('ratechange', () => {
     const speeds = JSON.parse(localStorage.getItem('savedSpeeds') || '{}')
     speeds[window.location.hostname] = video.playbackRate
