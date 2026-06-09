@@ -25,6 +25,7 @@ let taskQueue = { tasks: [], currentIndex: 0 }
 let config = {}
 let userInfo = null
 let lastActiveTabUrl = ''
+let versionInfo = null
 
 function icon(name) {
   return ICONS[name] || ''
@@ -333,6 +334,18 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg.action === ACTIONS.QUEUE_PAUSED_CHANGED) {
     if (currentTab === 'tasks') renderTasks()
   }
+  if (msg.action === ACTIONS.VERSION_RESULT) {
+    versionInfo = msg
+    const el = document.getElementById('versionText')
+    if (!el) return
+    if (msg.hasUpdate) {
+      el.className = 'header-update'
+      el.textContent = 'v' + msg.current + ' → v' + msg.latest
+      el.onclick = () => chrome.tabs.create({ url: msg.url })
+    } else {
+      el.textContent = 'v' + msg.current
+    }
+  }
 })
 
 chrome.storage.onChanged.addListener((changes) => {
@@ -379,6 +392,8 @@ document.querySelectorAll('.tab').forEach(tab => {
 })
 
 async function init() {
+  chrome.runtime.sendMessage({ action: ACTIONS.CHECK_VERSION }).catch(() => {})
+
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   if (!tab || !tab.url) return
   if (tab.url === lastActiveTabUrl) return

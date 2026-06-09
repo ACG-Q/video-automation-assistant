@@ -3,7 +3,7 @@
   "name": "视频自动化助手",
   "version": "1.0.0",
   "description": "cdeaa.com 学习平台自动化工具",
-  "permissions": ["storage", "tabs", "sidePanel"],
+  "permissions": ["storage", "tabs", "sidePanel", "alarms"],
   "host_permissions": ["*://cdeaa.com/*"],
   "background": {
     "service_worker": "dist/background.js"
