@@ -2,24 +2,82 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>手动选择答案</title>
   <style>
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface-hover: #f0f1f5;
+      --border: #e5e7eb;
+      --primary: #4f6af0;
+      --primary-hover: #3b55d8;
+      --primary-soft: rgba(79,106,240,0.08);
+      --text: #1a1d26;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --radius-sm: 6px;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --transition: 150ms ease;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; padding: 16px; background: #1a1a2e; color: #e0e0e6; font-size: 14px; }
-    h3 { margin-bottom: 12px; font-size: 16px; }
-    #qTitle { font-size: 13px; color: #9a9aaf; margin-bottom: 12px; line-height: 1.5; }
-    .opt { padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; font-size: 14px; }
-    .opt:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
-    .opt.selected { background: rgba(108,92,231,0.3); border-color: #6c5ce7; }
-    .btn { width: 100%; padding: 12px; border-radius: 20px; border: none; background: #6c5ce7; color: white; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 12px; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    :focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    #qTitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .opt {
+      padding: 11px 14px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-bottom: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 14px;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .opt:hover { background: var(--surface-hover); border-color: var(--border-hover); }
+    .opt.selected { background: var(--primary-soft); border-color: var(--primary); font-weight: 500; }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: background var(--transition);
+    }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn:hover:not(:disabled) { opacity: 0.85; }
+    .btn:hover:not(:disabled) { background: var(--primary-hover); }
   </style>
 </head>
 <body>
-  <h3>手动选择答案</h3>
+  <h3>选择答案</h3>
   <div id="qTitle"></div>
-  <div id="optsList"></div>
+  <div id="optsList" role="radiogroup" aria-label="选项列表"></div>
   <button class="btn" id="confirmBtn" disabled>确认选择</button>
   <script src="../../dist/manual-select.js"></script>
 </body>
