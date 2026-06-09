@@ -26,6 +26,10 @@ function truncateSource(src) {
   return src.length > 30 ? src.slice(0, 30) + '...' : src
 }
 
+function attr(name, value) {
+  return ` ${name}="${escapeHtml(value || '')}"`
+}
+
 function escapeHtml(text) {
   const div = document.createElement('div')
   div.textContent = text
@@ -73,8 +77,8 @@ function render() {
         <div class="card-meta">
           <span>${sourceTag(item.isLocal)}</span>
           ${syncLabel}
-          <span title="${escapeHtml(item.source || '')}">来源: ${escapeHtml(truncateSource(item.source))}</span>
-          <span title="${item.questionId || ''}">ID: ${(item.questionId || '').slice(0, 8)}...</span>
+          <span${attr('title', item.source)}>来源: ${escapeHtml(truncateSource(item.source))}</span>
+          <span${attr('title', item.questionId)}>ID: ${(item.questionId || '').slice(0, 8)}...</span>
           <span>${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : '-'}</span>
         </div>
         <div class="card-actions">
