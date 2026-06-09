@@ -54,6 +54,13 @@ function render() {
     const optsHtml = (item.options || []).map(o =>
       `<div class="opt-line">${escapeHtml(o)}</div>`
     ).join('')
+    const syncLabel = item.syncStatus === 'conflict'
+      ? '<span class="tag tag-conflict">冲突</span>'
+      : item.syncStatus === 'local_modified'
+        ? '<span class="tag tag-modified">已修改</span>'
+        : item.syncStatus === 'remote_modified'
+          ? '<span class="tag tag-remote">远程更新</span>'
+          : ''
     return `
       <div class="card">
         <div class="card-title">${escapeHtml(item.title || '')}</div>
@@ -61,6 +68,7 @@ function render() {
         <div class="card-answer">答案: ${answer || '-'}</div>
         <div class="card-meta">
           <span>${sourceTag(item.source)}</span>
+          ${syncLabel}
           <span>来源: ${escapeHtml(item.source || '—')}</span>
           <span>ID: ${(item.questionId || '').slice(0, 8)}...</span>
           <span>${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : '-'}</span>
@@ -68,6 +76,10 @@ function render() {
         <div class="card-actions">
           <button class="btn btn-sm btn-secondary" data-toggle-edit="${realIdx}">编辑</button>
           <button class="btn btn-sm btn-danger" data-delete="${realIdx}">删除</button>
+          ${item.syncStatus === 'conflict'
+            ? `<button class="btn btn-sm btn-primary" data-keep-local="${realIdx}">保留本地</button>
+               <button class="btn btn-sm btn-success" data-accept-remote="${realIdx}">采纳远程</button>`
+            : ''}
         </div>
         <div class="edit-area" id="edit-${realIdx}">
           <textarea id="edit-title-${realIdx}">${escapeHtml(item.title || '')}</textarea>
@@ -98,6 +110,8 @@ function render() {
       if (titleEl) bank[idx].title = titleEl.value
       if (optsEl) bank[idx].options = optsEl.value.split('\n').filter(s => s.trim())
       if (answerEl) bank[idx].answer = answerEl.value
+      bank[idx].version = (bank[idx].version || 0) + 1
+      bank[idx].syncStatus = 'local_modified'
       bank[idx].dateUpdated = new Date().toISOString()
       await saveQuestionBank(bank)
       showToast('已保存')
@@ -117,6 +131,22 @@ function render() {
       bank.splice(idx, 1)
       await saveQuestionBank(bank)
       showToast('已删除')
+      render()
+    })
+  })
+  list.querySelectorAll('[data-keep-local]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = parseInt(btn.dataset.keepLocal)
+      bank[idx].syncStatus = 'synced'
+      await saveQuestionBank(bank)
+      render()
+    })
+  })
+  list.querySelectorAll('[data-accept-remote]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = parseInt(btn.dataset.acceptRemote)
+      bank[idx].syncStatus = 'remote_modified'
+      await saveQuestionBank(bank)
       render()
     })
   })
@@ -161,7 +191,11 @@ async function doImport(file) {
         options: options,
         answer: extractLetterAnswer(item.answer || ''),
         source: item.source || 'import',
-        dateAdded: new Date().toISOString()
+        isLocal: true,
+        syncStatus: 'local_modified',
+        version: 1,
+        dateAdded: new Date().toISOString(),
+        dateUpdated: new Date().toISOString()
       })
       added++
     }
@@ -234,7 +268,11 @@ function setupAddForm() {
       options,
       answer,
       source,
-      dateAdded: new Date().toISOString()
+      isLocal: true,
+      syncStatus: 'local_modified',
+      version: 1,
+      dateAdded: new Date().toISOString(),
+      dateUpdated: new Date().toISOString()
     })
     await saveQuestionBank(bank)
     showToast('已添加')
@@ -265,23 +303,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.target.value = ''
   })
   document.getElementById('syncBtn').addEventListener('click', doSync)
+  document.getElementById('pushBtn')?.addEventListener('click', async () => {
+    document.getElementById('pushBtn').disabled = true
+    document.getElementById('pushBtn').textContent = '推送中...'
+    try {
+      chrome.runtime.sendMessage({ action: ACTIONS.PUSH_SYNC })
+    } catch {
+      document.getElementById('pushBtn').disabled = false
+      document.getElementById('pushBtn').textContent = '推送远程'
+    }
+  })
   document.getElementById('clearBtn').addEventListener('click', doClear)
 
   setupAddForm()
 
-  chrome.runtime.onMessage.addListener((msg) => {
+  chrome.runtime.onMessage.addListener(async (msg) => {
     if (msg.action === ACTIONS.SYNC_RESULT) {
       document.getElementById('syncBtn').disabled = false
       document.getElementById('syncBtn').textContent = '同步远程'
-      if (msg.added > 0) {
-        showToast(`同步完成，新增 ${msg.added} 题，共计 ${msg.total} 题`)
-      } else if (msg.added === 0) {
-        showToast('题库已是最新，无新增')
-      } else {
-        showToast('同步失败', true)
-      }
-      bank = []
-      loadQuestionBank().then(newBank => { bank = newBank; render() })
+      const parts = []
+      if (msg.added > 0) parts.push(`新增 ${msg.added} 题`)
+      else if (msg.added === 0) parts.push('题库已是最新')
+      else parts.push('同步失败')
+      if (msg.conflicts?.length > 0) parts.push(`${msg.conflicts.length} 个冲突待解决`)
+      showToast(parts.join('，'), msg.added < 0)
+      bank = await loadQuestionBank()
+      render()
+    }
+    if (msg.action === ACTIONS.PUSH_SYNC_RESULT) {
+      document.getElementById('pushBtn').disabled = false
+      document.getElementById('pushBtn').textContent = '推送远程'
+      showToast(msg.pushed > 0 ? `已推送 ${msg.pushed} 题` : '无需推送')
+      bank = await loadQuestionBank()
+      render()
     }
   })
 })
