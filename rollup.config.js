@@ -26,4 +26,9 @@ export default defineConfig([
     context: 'window',
     output: { file: 'dist/manual-select.js', format: 'iife' },
   },
+  {
+    input: 'src/question-bank/question-bank.js',
+    context: 'window',
+    output: { file: 'dist/question-bank.js', format: 'iife' },
+  },
 ]);

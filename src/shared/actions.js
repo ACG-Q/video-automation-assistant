@@ -31,4 +31,10 @@ export const ACTIONS = {
 
   // Sidepanel → Background
   CHECK_VERSION: 'checkVersion',
+
+  // Question bank page → Background
+  REQUEST_SYNC: 'requestSync',
+
+  // Background → Question bank page
+  SYNC_RESULT: 'syncResult',
 }

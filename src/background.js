@@ -217,6 +217,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (info) notifySidebar({ action: ACTIONS.VERSION_RESULT, ...info })
         break
       }
+
+      case ACTIONS.REQUEST_SYNC: {
+        const cfg = await loadConfig()
+        const count = await syncRemoteQuestionBank(cfg.bankUrl)
+        const bank = await loadQuestionBank()
+        chrome.runtime.sendMessage({
+          action: ACTIONS.SYNC_RESULT,
+          added: count,
+          total: bank.length
+        }).catch(() => {})
+        break
+      }
     }
   } catch (e) {
     console.error('[background] 消息处理错误:', e)
