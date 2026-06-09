@@ -182,8 +182,9 @@ function renderPlay() {
     <div class="section-label">${icon('video')} 视频控制</div>
     <div class="control-grid">
       <button class="control-btn" id="backBtn">${icon('backward')}<span>快退</span></button>
-      <button class="control-btn is-primary" id="playBtn">${icon('play')}<span>播放/暂停</span></button>
+      <button class="control-btn is-primary" id="playBtn">${icon(videoState.paused ? 'play' : 'pause')}<span>${videoState.paused ? '播放' : '暂停'}</span></button>
       <button class="control-btn" id="fwdBtn">${icon('forward')}<span>快进</span></button>
+      <button class="control-btn" id="muteBtn">${icon(videoState.muted ? 'mute' : 'volume')}<span>${videoState.muted ? '取消静音' : '静音'}</span></button>
     </div>
 
     <div class="section-label" style="margin-top:4px;">${icon('speed')} 倍速</div>
@@ -217,9 +218,12 @@ function renderPlay() {
   document.getElementById('playBtn')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'togglePlay' })
   })
-  document.getElementById('fwdBtn')?.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'forward' })
-  })
+document.getElementById('fwdBtn')?.addEventListener('click', () => {
+  chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'stepForward' })
+})
+document.getElementById('muteBtn')?.addEventListener('click', () => {
+  chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'toggleMute' })
+})
 
   document.querySelectorAll('[data-sp]').forEach(btn => {
     btn.addEventListener('click', () => {

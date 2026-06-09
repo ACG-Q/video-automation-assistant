@@ -116,5 +116,8 @@ export function executeVideoCommand(command, value) {
     case 'togglePlay':
       v.paused ? v.play() : (state.lastUserPauseTime = Date.now(), v.pause())
       break
+    case 'toggleMute':
+      v.muted = !v.muted
+      break
   }
 }
