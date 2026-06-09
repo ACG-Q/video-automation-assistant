@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a2e; color: #e0e0e6; padding: 24px 32px;
+      max-width: 900px; margin: 0 auto; font-size: 14px;
+    }
+    h1 { font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+    .stats { font-size: 12px; color: #9a9aaf; font-weight: 400; }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 16px; align-items: center;
+    }
+    .toolbar .spacer { flex: 1; }
+    .toolbar input[type="text"] {
+      padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px; width: 220px;
+    }
+
+    .btn {
+      padding: 8px 18px; border-radius: 20px; border: none;
+      font-size: 13px; cursor: pointer; font-weight: 500;
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: #6c5ce7; color: white; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-danger { background: #e74c3c; color: white; }
+    .btn-danger:hover { opacity: 0.85; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: #e0e0e6; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .btn-success { background: #27ae60; color: white; }
+    .btn-success:hover { opacity: 0.85; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+    }
+    .card-title {
+      font-weight: 500; font-size: 13px; line-height: 1.5;
+      margin-bottom: 6px; word-break: break-word;
+    }
+    .card-answer {
+      font-size: 12px; color: #4caf50; margin-bottom: 4px;
+    }
+    .card-meta {
+      font-size: 11px; color: #9a9aaf;
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .card-actions {
+      display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+    }
+
+    .edit-area { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .edit-area.open { display: block; }
+    .edit-area textarea {
+      width: 100%; min-height: 48px;
+      padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px;
+      resize: vertical; font-family: inherit;
+    }
+    .edit-area .edit-btns { display: flex; gap: 6px; margin-top: 6px; }
+
+    .toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: #4caf50; color: white; padding: 10px 24px;
+      border-radius: 24px; font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: fadeIn 0.3s ease; z-index: 100;
+    }
+    .toast.error { background: #e74c3c; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .empty { text-align: center; color: #9a9aaf; padding: 40px 0; font-size: 14px; }
+    .empty svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 12px; }
+
+    .add-form {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 16px; margin-bottom: 16px;
+    }
+    .add-form label { display: block; font-size: 12px; color: #9a9aaf; margin-bottom: 4px; margin-top: 10px; }
+    .add-form label:first-child { margin-top: 0; }
+    .add-form input, .add-form textarea {
+      width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px;
+    }
+    .add-form textarea { min-height: 60px; resize: vertical; font-family: inherit; }
+    .add-form .opt-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+    .add-form .opt-row input { flex: 1; }
+    .add-form .add-opt-btn { cursor: pointer; color: #6c5ce7; font-size: 12px; margin-top: 4px; }
+
+    .hidden { display: none; }
+    .tag {
+      display: inline-block; font-size: 10px; padding: 2px 8px;
+      border-radius: 10px; background: rgba(255,255,255,0.08); color: #9a9aaf;
+    }
+    .tag-manual { background: rgba(108,92,231,0.2); color: #b8a9ff; }
+    .tag-remote { background: rgba(39,174,96,0.2); color: #6fcf97; }
+  </style>
+</head>
+<body>
+  <h1>
+    题库管理
+    <span class="stats" id="statsLine"></span>
+  </h1>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="搜索题目关键词...">
+    <span class="spacer"></span>
+    <button class="btn btn-primary" id="syncBtn">同步远程</button>
+    <button class="btn btn-secondary" id="exportBtn">导出 JSON</button>
+    <button class="btn btn-secondary" id="importBtn">导入 JSON</button>
+    <button class="btn btn-success" id="addToggleBtn">+ 手动添加</button>
+    <button class="btn btn-danger" id="clearBtn">清空</button>
+  </div>
+
+  <input type="file" id="importFileInput" accept=".json" class="hidden">
+
+  <div class="add-form hidden" id="addForm">
+    <label>题目标题</label>
+    <input type="text" id="addTitle" placeholder="输入题目文本...">
+    <label>选项</label>
+    <div id="addOptions">
+      <div class="opt-row">
+        <span style="color:#9a9aaf;font-size:12px;min-width:16px;">A</span>
+        <input type="text" class="opt-input" placeholder="选项 A 内容">
+        <button class="btn btn-sm btn-secondary" data-remove-opt style="font-size:10px;padding:2px 8px;">x</button>
+      </div>
+      <div class="opt-row">
+        <span style="color:#9a9aaf;font-size:12px;min-width:16px;">B</span>
+        <input type="text" class="opt-input" placeholder="选项 B 内容">
+        <button class="btn btn-sm btn-secondary" data-remove-opt style="font-size:10px;padding:2px 8px;">x</button>
+      </div>
+    </div>
+    <div class="add-opt-btn" id="addOptBtn">+ 添加选项</div>
+    <label>答案</label>
+    <input type="text" id="addAnswer" placeholder="例如: B 或 B. 市场经济">
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary" id="addSubmitBtn">添加</button>
+      <button class="btn btn-secondary" id="addCancelBtn">取消</button>
+    </div>
+  </div>
+
+  <div id="list"></div>
+  <script src="../../dist/question-bank.js"></script>
+</body>
+</html>

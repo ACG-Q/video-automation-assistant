@@ -19,6 +19,7 @@ const HTML_SOURCES = [
   { src: 'src/sidepanel/sidepanel.html', dest: 'dist/sidepanel.html' },
   { src: 'src/config/config.html', dest: 'dist/config.html' },
   { src: 'src/manual-select/manual-select.html', dest: 'dist/manual-select.html' },
+  { src: 'src/question-bank/question-bank.html', dest: 'dist/question-bank.html' },
 ]
 
 for (const { src, dest } of HTML_SOURCES) {
