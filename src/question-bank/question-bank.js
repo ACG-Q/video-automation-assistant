@@ -15,9 +15,10 @@ function showToast(msg, isError) {
   setTimeout(() => el.remove(), 2500)
 }
 
-function sourceTag(source) {
-  if (!source || source === 'manual') return '<span class="tag tag-manual">手动</span>'
-  return '<span class="tag tag-remote">远程</span>'
+function sourceTag(isLocal) {
+  return isLocal
+    ? '<span class="tag tag-manual">手动</span>'
+    : '<span class="tag tag-remote">远程</span>'
 }
 
 function escapeHtml(text) {
@@ -32,13 +33,11 @@ function render() {
   const q = filterText.trim().toLowerCase()
   const filtered = q ? bank.filter(item => (item.title || '').toLowerCase().includes(q)) : bank
 
-  const bySource = {}
-  for (const item of bank) {
-    const src = item.source || 'manual'
-    bySource[src] = (bySource[src] || 0) + 1
-  }
-  const srcParts = Object.entries(bySource).map(([k, v]) => `${k === 'manual' ? '手动' : '远程'}: ${v}`)
-  stats.textContent = `总计 ${bank.length} 题  |  ${srcParts.join('  ')}`
+  const localCount = bank.filter(q => q.isLocal).length
+  const remoteCount = bank.length - localCount
+  const parts = [`本地: ${localCount}`]
+  if (remoteCount > 0) parts.push(`远程: ${remoteCount}`)
+  stats.textContent = `总计 ${bank.length} 题  |  ${parts.join('  ')}`
 
   if (filtered.length === 0) {
     list.innerHTML = `<div class="empty">
@@ -67,7 +66,7 @@ function render() {
         ${optsHtml ? `<div class="card-options">${optsHtml}</div>` : ''}
         <div class="card-answer">答案: ${answer || '-'}</div>
         <div class="card-meta">
-          <span>${sourceTag(item.source)}</span>
+          <span>${sourceTag(item.isLocal)}</span>
           ${syncLabel}
           <span>来源: ${escapeHtml(item.source || '—')}</span>
           <span>ID: ${(item.questionId || '').slice(0, 8)}...</span>
