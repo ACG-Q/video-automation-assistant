@@ -14,7 +14,8 @@ export async function loadQuestionBank() {
         ...q,
         isLocal: q.source === 'manual' || false,
         syncStatus: 'synced',
-        version: 1
+        version: 1,
+        dateUpdated: q.dateUpdated || q.dateAdded || new Date().toISOString()
       }
     }
     return q
@@ -153,8 +154,13 @@ export async function syncFromRemote(bankUrl) {
     if (local.isLocal === true) {
       // 本地创建的题，本地权威
       if (remoteUpdated > local.dateUpdated) {
-        // 远程有更新，标记冲突
+        // 远程有更新，标记冲突，保存远程数据供用户选择
         local.syncStatus = 'conflict'
+        local._remote = {
+          title: item.title,
+          options: options || [],
+          answer: extractLetterAnswer(item.answer || '')
+        }
         conflicts.push({ questionId: hash, title: local.title })
       }
     } else {
@@ -177,6 +183,11 @@ export async function syncFromRemote(bankUrl) {
           }
         } else {
           local.syncStatus = 'conflict'
+          local._remote = {
+            title: item.title,
+            options: options || [],
+            answer: extractLetterAnswer(item.answer || '')
+          }
           conflicts.push({ questionId: hash, title: local.title })
         }
       } else {

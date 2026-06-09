@@ -137,6 +137,7 @@ function render() {
   list.querySelectorAll('[data-keep-local]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const idx = parseInt(btn.dataset.keepLocal)
+      delete bank[idx]._remote
       bank[idx].syncStatus = 'synced'
       await saveQuestionBank(bank)
       render()
@@ -145,7 +146,12 @@ function render() {
   list.querySelectorAll('[data-accept-remote]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const idx = parseInt(btn.dataset.acceptRemote)
+      if (bank[idx]._remote) {
+        Object.assign(bank[idx], bank[idx]._remote)
+        delete bank[idx]._remote
+      }
       bank[idx].syncStatus = 'remote_modified'
+      bank[idx].dateUpdated = new Date().toISOString()
       await saveQuestionBank(bank)
       render()
     })
