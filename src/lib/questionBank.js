@@ -5,7 +5,22 @@ const MIN_KEYWORD_MATCHES = 2
 
 export async function loadQuestionBank() {
   const result = await chrome.storage.local.get('questionBank')
-  return result.questionBank || []
+  let bank = result.questionBank || []
+  let changed = false
+  bank = bank.map(q => {
+    if (q.isLocal === undefined) {
+      changed = true
+      return {
+        ...q,
+        isLocal: q.source === 'manual' || false,
+        syncStatus: 'synced',
+        version: 1
+      }
+    }
+    return q
+  })
+  if (changed) await saveQuestionBank(bank)
+  return bank
 }
 
 export async function saveQuestionBank(bank) {
@@ -58,14 +73,24 @@ export async function updateQuestionBank(entry) {
 
   const idx = bank.findIndex(q => q.questionId === hash)
   if (idx >= 0) {
-    if (bank[idx].answer !== entry.answer) {
-      bank[idx] = { ...bank[idx], ...entry, questionId: hash, dateUpdated: new Date().toISOString() }
+    bank[idx] = {
+      ...bank[idx],
+      ...entry,
+      questionId: hash,
+      dateUpdated: new Date().toISOString(),
+      version: (bank[idx].version || 0) + 1,
+      syncStatus: 'local_modified'
     }
   } else {
     bank.push({
       ...entry,
       questionId: hash,
-      dateAdded: entry.dateAdded || new Date().toISOString()
+      isLocal: true,
+      source: entry.source || 'manual',
+      syncStatus: 'local_modified',
+      version: 1,
+      dateAdded: entry.dateAdded || new Date().toISOString(),
+      dateUpdated: new Date().toISOString()
     })
   }
 
