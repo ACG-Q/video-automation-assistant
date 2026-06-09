@@ -20,6 +20,12 @@ function sourceTag(source) {
   return '<span class="tag tag-remote">远程</span>'
 }
 
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
 function render() {
   const list = document.getElementById('list')
   const stats = document.getElementById('statsLine')
@@ -45,12 +51,17 @@ function render() {
   list.innerHTML = filtered.map((item, i) => {
     const realIdx = bank.indexOf(item)
     const answer = extractLetterAnswer(item.answer || '')
+    const optsHtml = (item.options || []).map(o =>
+      `<div class="opt-line">${escapeHtml(o)}</div>`
+    ).join('')
     return `
       <div class="card">
         <div class="card-title">${escapeHtml(item.title || '')}</div>
+        ${optsHtml ? `<div class="card-options">${optsHtml}</div>` : ''}
         <div class="card-answer">答案: ${answer || '-'}</div>
         <div class="card-meta">
           <span>${sourceTag(item.source)}</span>
+          <span>来源: ${escapeHtml(item.source || '—')}</span>
           <span>ID: ${(item.questionId || '').slice(0, 8)}...</span>
           <span>${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : '-'}</span>
         </div>
@@ -59,6 +70,8 @@ function render() {
           <button class="btn btn-sm btn-danger" data-delete="${realIdx}">删除</button>
         </div>
         <div class="edit-area" id="edit-${realIdx}">
+          <textarea id="edit-title-${realIdx}">${escapeHtml(item.title || '')}</textarea>
+          <textarea id="edit-options-${realIdx}" placeholder="每行一个选项">${escapeHtml((item.options || []).join('\n'))}</textarea>
           <textarea id="edit-text-${realIdx}">${escapeHtml(item.answer || '')}</textarea>
           <div class="edit-btns">
             <button class="btn btn-sm btn-primary" data-save-edit="${realIdx}">保存</button>
@@ -79,10 +92,13 @@ function render() {
   list.querySelectorAll('[data-save-edit]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const idx = parseInt(btn.dataset.saveEdit)
-      const textarea = document.getElementById('edit-text-' + idx)
-      bank[idx].answer = textarea.value
-      if (bank[idx].dateUpdated) bank[idx].dateUpdated = new Date().toISOString()
-      else bank[idx].dateUpdated = new Date().toISOString()
+      const titleEl = document.getElementById('edit-title-' + idx)
+      const optsEl = document.getElementById('edit-options-' + idx)
+      const answerEl = document.getElementById('edit-text-' + idx)
+      if (titleEl) bank[idx].title = titleEl.value
+      if (optsEl) bank[idx].options = optsEl.value.split('\n').filter(s => s.trim())
+      if (answerEl) bank[idx].answer = answerEl.value
+      bank[idx].dateUpdated = new Date().toISOString()
       await saveQuestionBank(bank)
       showToast('已保存')
       render()
@@ -104,12 +120,6 @@ function render() {
       render()
     })
   })
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
 }
 
 async function doExport() {
@@ -185,60 +195,31 @@ async function doClear() {
 }
 
 function setupAddForm() {
-  let optCount = 2
+  const titleEl = document.getElementById('addTitle')
+  const optsEl = document.getElementById('addOptions')
+  const answerEl = document.getElementById('addAnswer')
+  const sourceEl = document.getElementById('addSource')
+  const form = document.getElementById('addForm')
 
   document.getElementById('addToggleBtn').addEventListener('click', () => {
-    const form = document.getElementById('addForm')
     form.classList.toggle('hidden')
-    if (!form.classList.contains('hidden')) {
-      document.getElementById('addTitle').focus()
-    }
+    if (!form.classList.contains('hidden')) titleEl.focus()
   })
 
   document.getElementById('addCancelBtn').addEventListener('click', () => {
-    document.getElementById('addForm').classList.add('hidden')
-  })
-
-  document.getElementById('addOptBtn').addEventListener('click', () => {
-    if (optCount >= 6) return
-    const label = String.fromCharCode(65 + optCount)
-    const row = document.createElement('div')
-    row.className = 'opt-row'
-    row.innerHTML = `
-      <span style="color:#9a9aaf;font-size:12px;min-width:16px;">${label}</span>
-      <input type="text" class="opt-input" placeholder="选项 ${label} 内容">
-      <button class="btn btn-sm btn-secondary" data-remove-opt style="font-size:10px;padding:2px 8px;">x</button>
-    `
-    document.getElementById('addOptions').appendChild(row)
-    optCount++
-  })
-
-  document.getElementById('addOptions').addEventListener('click', (e) => {
-    if (e.target.matches('[data-remove-opt]')) {
-      const row = e.target.closest('.opt-row')
-      if (document.querySelectorAll('.opt-row').length <= 2) return
-      row.remove()
-      optCount--
-      const rows = document.querySelectorAll('#addOptions .opt-row')
-      rows.forEach((r, i) => {
-        r.querySelector('span').textContent = String.fromCharCode(65 + i)
-      })
-    }
+    form.classList.add('hidden')
   })
 
   document.getElementById('addSubmitBtn').addEventListener('click', async () => {
-    const title = document.getElementById('addTitle').value.trim()
-    if (!title) { showToast('请输入题目标题', true); return }
+    const title = titleEl.value.trim()
+    if (!title) { showToast('请输入题目', true); return }
 
-    const optInputs = document.querySelectorAll('.opt-input')
-    const options = []
-    for (const inp of optInputs) {
-      const val = inp.value.trim()
-      if (val) options.push(val)
-    }
+    const options = optsEl.value.split('\n').map(s => s.trim()).filter(Boolean)
+    if (options.length < 2) { showToast('至少需要 2 个选项', true); return }
 
-    const answerRaw = document.getElementById('addAnswer').value.trim()
+    const answerRaw = answerEl.value.trim()
     const answer = answerRaw ? extractLetterAnswer(answerRaw) : ''
+    const source = sourceEl.value.trim() || 'manual'
 
     const { sha256Hex } = await import('../lib/utils.js')
     const hash = await sha256Hex(title + options.join(''))
@@ -252,15 +233,16 @@ function setupAddForm() {
       title,
       options,
       answer,
-      source: 'manual',
+      source,
       dateAdded: new Date().toISOString()
     })
     await saveQuestionBank(bank)
     showToast('已添加')
-    document.getElementById('addTitle').value = ''
-    document.querySelectorAll('.opt-input').forEach(inp => inp.value = '')
-    document.getElementById('addAnswer').value = ''
-    document.getElementById('addForm').classList.add('hidden')
+    titleEl.value = ''
+    optsEl.value = ''
+    answerEl.value = ''
+    sourceEl.value = ''
+    form.classList.add('hidden')
     render()
   })
 }

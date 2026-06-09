@@ -4,111 +4,230 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    :root {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface-hover: #f0f1f5;
+      --border: #e5e7eb;
+      --border-hover: #d1d5db;
+      --primary: #4f6af0;
+      --primary-hover: #3b55d8;
+      --primary-soft: rgba(79,106,240,0.08);
+      --text: #1a1d26;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+      --success-soft: #d1fae5;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --danger-soft: #fee2e2;
+      --radius-sm: 6px;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 1px 3px rgba(0,0,0,0.09);
+      --transition: 150ms ease;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #1a1a2e; color: #e0e0e6; padding: 24px 32px;
-      max-width: 900px; margin: 0 auto; font-size: 14px;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px 32px;
+      max-width: 900px;
+      margin: 0 auto;
+      font-size: 14px;
     }
-    h1 { font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
-    .stats { font-size: 12px; color: #9a9aaf; font-weight: 400; }
+    :focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stats { font-size: 13px; color: var(--text-muted); font-weight: 400; }
 
     .toolbar {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 16px; align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+      align-items: center;
     }
     .toolbar .spacer { flex: 1; }
     .toolbar input[type="text"] {
-      padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px; width: 220px;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      width: 200px;
     }
 
     .btn {
-      padding: 8px 18px; border-radius: 20px; border: none;
-      font-size: 13px; cursor: pointer; font-weight: 500;
-      white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+      background: var(--surface);
+      color: var(--text);
+      transition: background var(--transition), border-color var(--transition);
+      min-height: 34px;
     }
-    .btn-primary { background: #6c5ce7; color: white; }
-    .btn-primary:hover { opacity: 0.85; }
-    .btn-danger { background: #e74c3c; color: white; }
-    .btn-danger:hover { opacity: 0.85; }
-    .btn-secondary { background: rgba(255,255,255,0.1); color: #e0e0e6; }
-    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
-    .btn-success { background: #27ae60; color: white; }
-    .btn-success:hover { opacity: 0.85; }
-    .btn-sm { padding: 4px 12px; font-size: 12px; }
+    .btn:hover { background: var(--surface-hover); }
+    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-danger:hover { background: #e53935; }
+    .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+    .btn-success:hover { background: #059669; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; min-height: 28px; }
     .btn:disabled { opacity: 0.4; cursor: default; }
+    .btn svg { width: 14px; height: 14px; }
 
     .card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
     }
     .card-title {
-      font-weight: 500; font-size: 13px; line-height: 1.5;
-      margin-bottom: 6px; word-break: break-word;
+      font-weight: 600;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+    .card-options {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+    .card-options .opt-line {
+      padding: 2px 0;
     }
     .card-answer {
-      font-size: 12px; color: #4caf50; margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--success);
+      margin-bottom: 6px;
+      font-weight: 500;
     }
     .card-meta {
-      font-size: 11px; color: #9a9aaf;
-      display: flex; gap: 16px; flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
     }
     .card-actions {
-      display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
     }
 
-    .edit-area { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .edit-area { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
     .edit-area.open { display: block; }
     .edit-area textarea {
-      width: 100%; min-height: 48px;
-      padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px;
-      resize: vertical; font-family: inherit;
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      resize: vertical;
+      font-family: inherit;
+      margin-bottom: 6px;
     }
-    .edit-area .edit-btns { display: flex; gap: 6px; margin-top: 6px; }
+    .edit-area .edit-btns { display: flex; gap: 6px; margin-top: 4px; }
 
     .toast {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-      background: #4caf50; color: white; padding: 10px 24px;
-      border-radius: 24px; font-size: 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      animation: fadeIn 0.3s ease; z-index: 100;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #374151;
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: toastIn 0.25s ease;
+      z-index: 100;
     }
-    .toast.error { background: #e74c3c; }
-    @keyframes fadeIn {
+    .toast.error { background: var(--danger); }
+    @keyframes toastIn {
       from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
-    .empty { text-align: center; color: #9a9aaf; padding: 40px 0; font-size: 14px; }
-    .empty svg { width: 48px; height: 48px; opacity: 0.3; margin-bottom: 12px; }
+    .empty {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 48px 0;
+      font-size: 14px;
+    }
 
     .add-form {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 10px; padding: 16px; margin-bottom: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
     }
-    .add-form label { display: block; font-size: 12px; color: #9a9aaf; margin-bottom: 4px; margin-top: 10px; }
+    .add-form label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
     .add-form label:first-child { margin-top: 0; }
     .add-form input, .add-form textarea {
-      width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05); color: #e0e0e6; font-size: 13px;
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
     }
-    .add-form textarea { min-height: 60px; resize: vertical; font-family: inherit; }
-    .add-form .opt-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
-    .add-form .opt-row input { flex: 1; }
-    .add-form .add-opt-btn { cursor: pointer; color: #6c5ce7; font-size: 12px; margin-top: 4px; }
+    .add-form textarea { min-height: 72px; resize: vertical; font-family: inherit; }
+    .add-form .hint { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
+
     .tag {
-      display: inline-block; font-size: 10px; padding: 2px 8px;
-      border-radius: 10px; background: rgba(255,255,255,0.08); color: #9a9aaf;
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
     }
-    .tag-manual { background: rgba(108,92,231,0.2); color: #b8a9ff; }
-    .tag-remote { background: rgba(39,174,96,0.2); color: #6fcf97; }
+    .tag-manual { background: var(--primary-soft); color: var(--primary); }
+    .tag-remote { background: var(--success-soft); color: var(--success); }
   </style>
 </head>
 <body>
@@ -118,43 +237,35 @@
   </h1>
 
   <div class="toolbar">
-    <input type="text" id="searchInput" placeholder="搜索题目关键词...">
+    <input type="text" id="searchInput" placeholder="搜索题目...">
     <span class="spacer"></span>
     <button class="btn btn-primary" id="syncBtn">同步远程</button>
-    <button class="btn btn-secondary" id="exportBtn">导出 JSON</button>
-    <button class="btn btn-secondary" id="importBtn">导入 JSON</button>
-    <button class="btn btn-success" id="addToggleBtn">+ 手动添加</button>
+    <button class="btn" id="exportBtn">导出</button>
+    <button class="btn" id="importBtn">导入</button>
+    <button class="btn btn-success" id="addToggleBtn">+ 添加</button>
     <button class="btn btn-danger" id="clearBtn">清空</button>
   </div>
 
   <input type="file" id="importFileInput" accept=".json" class="hidden">
 
   <div class="add-form hidden" id="addForm">
-    <label>题目标题</label>
+    <label>题目</label>
     <input type="text" id="addTitle" placeholder="输入题目文本...">
-    <label>选项</label>
-    <div id="addOptions">
-      <div class="opt-row">
-        <span style="color:#9a9aaf;font-size:12px;min-width:16px;">A</span>
-        <input type="text" class="opt-input" placeholder="选项 A 内容">
-        <button class="btn btn-sm btn-secondary" data-remove-opt style="font-size:10px;padding:2px 8px;">x</button>
-      </div>
-      <div class="opt-row">
-        <span style="color:#9a9aaf;font-size:12px;min-width:16px;">B</span>
-        <input type="text" class="opt-input" placeholder="选项 B 内容">
-        <button class="btn btn-sm btn-secondary" data-remove-opt style="font-size:10px;padding:2px 8px;">x</button>
-      </div>
-    </div>
-    <div class="add-opt-btn" id="addOptBtn">+ 添加选项</div>
+    <label>选项（每行一个）</label>
+    <textarea id="addOptions" placeholder="A. 选项一&#10;B. 选项二&#10;C. 选项三&#10;D. 选项四"></textarea>
+    <div class="hint">每行一个选项，推荐以 A. / B. / C. 开头</div>
     <label>答案</label>
     <input type="text" id="addAnswer" placeholder="例如: B 或 B. 市场经济">
-    <div style="display:flex;gap:8px;margin-top:12px;">
+    <label>来源（可选）</label>
+    <input type="text" id="addSource" placeholder="留空默认为手动">
+    <div style="display:flex;gap:8px;margin-top:14px;">
       <button class="btn btn-primary" id="addSubmitBtn">添加</button>
-      <button class="btn btn-secondary" id="addCancelBtn">取消</button>
+      <button class="btn" id="addCancelBtn">取消</button>
     </div>
   </div>
 
   <div id="list"></div>
+
   <script src="../../dist/question-bank.js"></script>
 </body>
 </html>
