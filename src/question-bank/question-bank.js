@@ -21,6 +21,11 @@ function sourceTag(isLocal) {
     : '<span class="tag tag-remote">远程</span>'
 }
 
+function truncateSource(src) {
+  if (!src) return '—'
+  return src.length > 30 ? src.slice(0, 30) + '...' : src
+}
+
 function escapeHtml(text) {
   const div = document.createElement('div')
   div.textContent = text
@@ -68,7 +73,7 @@ function render() {
         <div class="card-meta">
           <span>${sourceTag(item.isLocal)}</span>
           ${syncLabel}
-          <span>来源: ${escapeHtml(item.source || '—')}</span>
+          <span>来源: ${escapeHtml(truncateSource(item.source))}</span>
           <span>ID: ${(item.questionId || '').slice(0, 8)}...</span>
           <span>${item.dateAdded ? new Date(item.dateAdded).toLocaleDateString() : '-'}</span>
         </div>
