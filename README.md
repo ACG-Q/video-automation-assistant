@@ -77,6 +77,43 @@ npm run build
 
 构建产物位于 `dist/` 目录。
 
+## 打包 CRX
+
+首次打包会生成私钥文件 `key.pem`，**务必妥善保管**，后续更新需要用同一私钥签名。
+
+### 手动打包
+
+```bash
+# 1. 构建
+npm install
+npm run build
+
+# 2. 安装 crx3
+npm install -g crx3
+
+# 3. 首次打包（会在 dist/ 生成 .crx）
+npx crx3 dist/ --crx3 --private-key key.pem --output video-automation-assistant.crx
+```
+
+或在 Chrome 扩展管理页（`chrome://extensions`）开启开发者模式，点击"打包扩展程序"，选择 `dist/` 目录。
+
+### 自动化分发
+
+推送 `v*` 标签到 GitHub 时，GitHub Actions 会自动构建、打包 `.zip` 和 `.crx` 并发布到 Release：
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+首次需要将私钥添加到仓库 Secrets：
+
+1. Settings → Secrets and variables → Actions → New repository secret
+2. Name: `CRX_PRIVATE_KEY`
+3. Value: `key.pem` 的完整内容
+
+> 私钥丢失后无法更新已发布的 CRX。如果泄露，他人可冒用你的身份发布更新。
+
 ## 技术栈
 
 - Chrome Extension Manifest V3

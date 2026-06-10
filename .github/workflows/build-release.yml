@@ -39,10 +39,22 @@ jobs:
           ZIP="video-automation-assistant.zip"
           [ -n "$VERSION" ] && ZIP="video-automation-assistant-v${VERSION}.zip"
           cd dist && zip -r "../$ZIP" .
+
+      - name: Package CRX
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+        run: |
+          echo "$CRX_PRIVATE_KEY" > key.pem
+          npx crx3 dist/ --crx3 --private-key key.pem --output "video-automation-assistant-v${VERSION}.crx"
+          rm key.pem
+
       - uses: actions/upload-artifact@v4
         with:
           name: extension
-          path: video-automation-assistant-*.zip
+          path: |
+            video-automation-assistant-*.zip
+            video-automation-assistant-*.crx
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -57,5 +69,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: video-automation-assistant-*.zip
+          files: |
+            video-automation-assistant-*.zip
+            video-automation-assistant-*.crx
           generate_release_notes: true
