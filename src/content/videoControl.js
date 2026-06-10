@@ -44,13 +44,6 @@ export function bindVideo(video) {
   video.addEventListener('loadedmetadata', restoreSpeed)
   video.addEventListener('canplay', restoreSpeed)
 
-  video.addEventListener('play', () => {
-    if (state.config.autoMute && !video.muted) {
-      video.muted = true
-      sendLog('视频已自动静音')
-    }
-  })
-
   video.addEventListener('ratechange', () => {
     const speeds = JSON.parse(localStorage.getItem('savedSpeeds') || '{}')
     speeds[window.location.hostname] = video.playbackRate
@@ -79,9 +72,7 @@ export function bindVideo(video) {
     chrome.runtime.sendMessage({
       action: ACTIONS.UPDATE_VIDEO_PROGRESS,
       currentTime: video.currentTime,
-      duration: video.duration,
-      paused: video.paused,
-      muted: video.muted
+      duration: video.duration
     }).catch(() => {})
   }, 1000)
 }
@@ -122,9 +113,6 @@ export function executeVideoCommand(command, value) {
     }
     case 'togglePlay':
       v.paused ? v.play() : (state.lastUserPauseTime = Date.now(), v.pause())
-      break
-    case 'toggleMute':
-      v.muted = !v.muted
       break
   }
 }

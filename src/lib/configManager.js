@@ -14,7 +14,6 @@ const DEFAULT_CONFIG = {
   speedStep: 0.25,
   keepSpeed: true,
   autoResume: true,
-  autoMute: false,
   videoRules: [{ match: '.*', path: 'video' }]
 }
 

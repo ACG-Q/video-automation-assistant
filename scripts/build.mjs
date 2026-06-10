@@ -1,6 +1,6 @@
 import { execSync } from 'child_process'
-import { readFileSync, writeFileSync, existsSync, mkdirSync, cpSync } from 'fs'
-import { resolve, dirname, join } from 'path'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -8,12 +8,6 @@ const DIST = resolve(ROOT, 'dist')
 
 if (!existsSync(DIST)) {
   mkdirSync(DIST, { recursive: true })
-}
-
-// 0. Generate icons if not yet present
-if (!existsSync(resolve(ROOT, 'icons', 'icon128.png'))) {
-  console.log('[build] icons not found, generating...')
-  execSync('node scripts/generate-icons.mjs', { cwd: ROOT, stdio: 'inherit' })
 }
 
 // 1. Rollup JS
@@ -35,16 +29,7 @@ for (const { src, dest } of HTML_SOURCES) {
   console.log(`[build] ${src} → ${dest}`)
 }
 
-// 3. icons: copy to dist/
-const ICON_DIR = resolve(ROOT, 'icons')
-const DIST_ICON_DIR = resolve(DIST, 'icons')
-if (existsSync(ICON_DIR)) {
-  if (!existsSync(DIST_ICON_DIR)) mkdirSync(DIST_ICON_DIR, { recursive: true })
-  cpSync(ICON_DIR, DIST_ICON_DIR, { recursive: true })
-  console.log('[build] icons/ → dist/icons/')
-}
-
-// 4. manifest.json: strip "dist/" prefix from all string values
+// 3. manifest.json: strip "dist/" prefix from all string values
 const manifestRaw = readFileSync(resolve(ROOT, 'manifest.json'), 'utf-8')
 const manifest = JSON.parse(manifestRaw)
 
