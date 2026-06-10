@@ -35,6 +35,7 @@ export const ACTIONS = {
   // Question bank page → Background
   REQUEST_SYNC: 'requestSync',
   PUSH_SYNC: 'pushSync',
+  START_QUEUE: 'startQueue',
 
   // Background → Question bank page
   SYNC_RESULT: 'syncResult',

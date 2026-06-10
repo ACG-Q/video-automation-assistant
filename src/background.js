@@ -135,6 +135,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         break
       }
 
+      case ACTIONS.START_QUEUE: {
+        const cfg = await loadConfig()
+        cfg.queuePaused = false
+        await saveConfig({ queuePaused: false })
+        notifySidebar({ action: ACTIONS.QUEUE_PAUSED_CHANGED, paused: false })
+        await playNextVideo()
+        break
+      }
+
       case ACTIONS.CLEAR_QUEUE: {
         await clearTaskQueue()
         break
