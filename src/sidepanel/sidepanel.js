@@ -110,12 +110,9 @@ function renderTasks() {
       </div>
       <div id="queueList" style="margin-top:6px;"></div>
       <div style="display:flex;gap:6px;margin-top:10px;">
-        <button class="btn btn-sm btn-primary" id="startBtn" style="flex:1;" title="从未完成任务开始播放">
-          ${icon('play')} 开始队列
-        </button>
-        <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;" title="${config.queuePaused ? '恢复队列播放' : '暂停队列播放'}">
+        <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;" title="${config.queuePaused ? '开始播放队列' : '暂停队列播放'}">
           ${icon(config.queuePaused ? 'play' : 'pauseCircle')}
-          ${config.queuePaused ? '恢复队列' : '暂停队列'}
+          ${config.queuePaused ? '开始' : '暂停队列'}
         </button>
         <button class="btn btn-sm btn-danger" id="clearBtn" style="flex:1;" title="清空所有任务">
           ${icon('trash')} 清空队列
@@ -135,9 +132,6 @@ function renderTasks() {
   })
   document.getElementById('clearBtn')?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: ACTIONS.CLEAR_QUEUE })
-  })
-  document.getElementById('startBtn')?.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: ACTIONS.START_QUEUE })
   })
 
   const listEl = document.getElementById('queueList')
@@ -282,10 +276,12 @@ function updateControlButtons() {
   if (playBtn) {
     const isPaused = videoState.paused
     playBtn.innerHTML = `${icon(isPaused ? 'play' : 'pause')}<span>${isPaused ? '播放' : '暂停'}</span>`
+    playBtn.title = isPaused ? '播放视频' : '暂停视频'
   }
   if (muteBtn) {
     const isMuted = videoState.muted
     muteBtn.innerHTML = `${icon(isMuted ? 'mute' : 'volume')}<span>${isMuted ? '取消静音' : '静音'}</span>`
+    muteBtn.title = isMuted ? '取消静音' : '静音'
   }
 }
 

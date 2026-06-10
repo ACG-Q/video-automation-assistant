@@ -4,7 +4,6 @@ export const ACTIONS = {
   SKIP_VIDEO: 'skipVideo',
   PLAY_SPECIFIC: 'playSpecific',
   TOGGLE_PAUSE_QUEUE: 'togglePauseQueue',
-  START_QUEUE: 'startQueue',
   CLEAR_QUEUE: 'clearQueue',
   UPDATE_CONFIG: 'updateConfig',
 
