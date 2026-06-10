@@ -25,11 +25,12 @@ jobs:
 
       - name: Update manifest.json version
         if: startsWith(github.ref, 'refs/tags/v')
-        run: node -e "
+        run: |
+          node -e "
           const m = require('./manifest.json');
           m.version = process.env.VERSION;
           require('fs').writeFileSync('manifest.json', JSON.stringify(m, null, 2));
-        "
+          "
 
       - run: npm run build
 
