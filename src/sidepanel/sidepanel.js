@@ -19,6 +19,8 @@ const ICONS = {
   pauseCircle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>',
   trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
   database: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
+  volume: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>',
+  mute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>',
 }
 
 let currentTab = 'tasks'
@@ -27,6 +29,7 @@ let config = {}
 let userInfo = null
 let lastActiveTabUrl = ''
 let versionInfo = null
+let videoState = { muted: false, paused: true }
 
 function icon(name) {
   return ICONS[name] || ''
@@ -48,12 +51,12 @@ function renderGuide() {
     <div class="card">
       <div class="card-title">个人中心</div>
       <div class="card-desc">从课程列表抓取所有视频任务</div>
-      <button class="btn btn-block" id="openCenter">${icon('user')} 打开个人中心</button>
+      <button class="btn btn-block" id="openCenter" title="打开个人中心页面">${icon('user')} 打开个人中心</button>
     </div>
     <div class="card">
       <div class="card-title">课程播放页</div>
       <div class="card-desc">进入课程后自动识别并控制视频</div>
-      <button class="btn btn-block btn-secondary" id="openCourse">${icon('video')} 打开课程</button>
+      <button class="btn btn-block btn-secondary" id="openCourse" title="打开课程页面">${icon('video')} 打开课程</button>
     </div>
   `
 
@@ -94,8 +97,8 @@ function renderTasks() {
   el.innerHTML = `
     ${userHtml}
     <div style="display:flex;gap:6px;">
-      <button class="btn btn-block" id="fetchBtn">${icon('cloud')} 抓取</button>
-      <button class="btn btn-block btn-secondary" id="appendBtn">${icon('list')} 追加</button>
+      <button class="btn btn-block" id="fetchBtn" title="从个人中心抓取所有视频任务">${icon('cloud')} 抓取</button>
+      <button class="btn btn-block btn-secondary" id="appendBtn" title="追加新任务到队列末尾">${icon('list')} 追加</button>
     </div>
     ${total > 0 ? `
       <div style="margin-top:12px;">
@@ -107,11 +110,11 @@ function renderTasks() {
       </div>
       <div id="queueList" style="margin-top:6px;"></div>
       <div style="display:flex;gap:6px;margin-top:10px;">
-        <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;">
+        <button class="btn btn-sm btn-secondary" id="pauseBtn" style="flex:1;" title="${config.queuePaused ? '开始播放队列' : '暂停队列播放'}">
           ${icon(config.queuePaused ? 'play' : 'pauseCircle')}
-          ${config.queuePaused ? '恢复队列' : '暂停队列'}
+          ${config.queuePaused ? '开始' : '暂停队列'}
         </button>
-        <button class="btn btn-sm btn-danger" id="clearBtn" style="flex:1;">
+        <button class="btn btn-sm btn-danger" id="clearBtn" style="flex:1;" title="清空所有任务">
           ${icon('trash')} 清空队列
         </button>
       </div>
@@ -166,15 +169,16 @@ function renderPlay() {
       <div style="font-weight:600;font-size:14px;margin-bottom:4px;" id="vidTitle">${curTask ? curTask.title : '-'}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:11px;color:var(--text-secondary);">${done} / ${taskQueue.tasks.length} 已完成</span>
-        <button class="btn btn-sm" id="skipBtn" style="padding:5px 12px;">${icon('skip')} 跳过</button>
+        <button class="btn btn-sm" id="skipBtn" style="padding:5px 12px;" title="跳过当前视频到下一个">${icon('skip')} 跳过</button>
       </div>
     </div>
 
     <div class="section-label">${icon('video')} 视频控制</div>
     <div class="control-grid">
-      <button class="control-btn" id="backBtn">${icon('backward')}<span>快退</span></button>
-      <button class="control-btn is-primary" id="playBtn">${icon('play')}<span>播放/暂停</span></button>
-      <button class="control-btn" id="fwdBtn">${icon('forward')}<span>快进</span></button>
+      <button class="control-btn" id="backBtn" title="快退 10 秒">${icon('backward')}<span>快退</span></button>
+      <button class="control-btn is-primary" id="playBtn" title="${videoState.paused ? '播放视频' : '暂停视频'}">${icon(videoState.paused ? 'play' : 'pause')}<span>${videoState.paused ? '播放' : '暂停'}</span></button>
+      <button class="control-btn" id="fwdBtn" title="快进 10 秒">${icon('forward')}<span>快进</span></button>
+      <button class="control-btn" id="muteBtn" title="${videoState.muted ? '取消静音' : '静音'}">${icon(videoState.muted ? 'mute' : 'volume')}<span>${videoState.muted ? '取消静音' : '静音'}</span></button>
     </div>
 
     <div class="section-label" style="margin-top:4px;">${icon('speed')} 倍速</div>
@@ -209,7 +213,10 @@ function renderPlay() {
     chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'togglePlay' })
   })
   document.getElementById('fwdBtn')?.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'forward' })
+    chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'stepForward' })
+  })
+  document.getElementById('muteBtn')?.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: ACTIONS.VIDEO_COMMAND, command: 'toggleMute' })
   })
 
   document.querySelectorAll('[data-sp]').forEach(btn => {
@@ -247,19 +254,35 @@ function renderPlay() {
 const LOG_MAX_ENTRIES = 200
 
 function appendLog(msg, type) {
-  const area = document.getElementById('logArea')
-  if (!area) return
-  const last = area.lastElementChild
-  if (last && last.textContent === msg) return
-  const dotClass = type || 'info'
-  const entry = document.createElement('div')
-  entry.className = 'log-entry'
-  entry.innerHTML = `<span class="log-dot ${dotClass}"></span><span>${msg}</span>`
-  area.appendChild(entry)
-  while (area.childElementCount > LOG_MAX_ENTRIES) {
-    area.removeChild(area.firstElementChild)
+
+  let iconSvg, textClass
+
+  if (type === 'success') { iconSvg = icon('check'); textClass = 'log-success' }
+  else if (type === 'error') { iconSvg = icon('alert'); textClass = 'log-error' }
+  else if (type === 'pending') { iconSvg = icon('pauseCircle'); textClass = 'log-pending' }
+  else if (type === 'user') { iconSvg = icon('user'); textClass = 'log-user' }
+  else if (type === 'debug') { iconSvg = icon('speed'); textClass = 'log-debug' }
+  else { iconSvg = icon('list'); textClass = 'log-info' }
+
+  const el = document.getElementById('taskLog')
+  if (!el) return
+  el.innerHTML += `<div class="log-line ${textClass}">${iconSvg} ${escapeHtml(msg)}</div>`
+  el.scrollTop = el.scrollHeight
+}
+
+function updateControlButtons() {
+  const playBtn = document.getElementById('playBtn')
+  const muteBtn = document.getElementById('muteBtn')
+  if (playBtn) {
+    const isPaused = videoState.paused
+    playBtn.innerHTML = `${icon(isPaused ? 'play' : 'pause')}<span>${isPaused ? '播放' : '暂停'}</span>`
+    playBtn.title = isPaused ? '播放视频' : '暂停视频'
   }
-  area.scrollTop = area.scrollHeight
+  if (muteBtn) {
+    const isMuted = videoState.muted
+    muteBtn.innerHTML = `${icon(isMuted ? 'mute' : 'volume')}<span>${isMuted ? '取消静音' : '静音'}</span>`
+    muteBtn.title = isMuted ? '取消静音' : '静音'
+  }
 }
 
 function showMatch(card, data, question, options) {
@@ -345,6 +368,16 @@ chrome.runtime.onMessage.addListener((msg) => {
       el.onclick = () => chrome.tabs.create({ url: msg.url })
     } else {
       el.textContent = 'v' + msg.current
+    }
+  }
+  if (msg.action === ACTIONS.UPDATE_VIDEO_PROGRESS) {
+    const newPaused = msg.paused
+    const newMuted = msg.muted
+    const changed = (newPaused !== videoState.paused) || (newMuted !== videoState.muted)
+    videoState.paused = newPaused
+    videoState.muted = newMuted
+    if (changed && currentTab === 'play') {
+      updateControlButtons()
     }
   }
 })
