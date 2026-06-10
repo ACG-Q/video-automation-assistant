@@ -17,6 +17,11 @@
     "default_path": "dist/sidepanel.html"
   },
   "action": {
-    "default_title": "视频自动化助手"
+    "default_title": "视频自动化助手",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   }
 }
